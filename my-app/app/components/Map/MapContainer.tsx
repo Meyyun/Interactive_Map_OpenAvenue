@@ -1,0 +1,37 @@
+'use client'
+import * as React from 'react';
+import Map from 'react-map-gl/mapbox';
+import 'mapbox-gl/dist/mapbox-gl.css';
+const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+export default function MapContainer() {
+    if (!TOKEN) {
+    return (
+      <div style={{ padding: '20px', border: '1px solid red', margin: '10px' }}>
+        <h3>Map Error</h3>
+        <p>Mapbox token not found. Please add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to your .env.local file</p>
+      </div>
+    );
+  }
+  return (
+    <div style={{ 
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw', 
+      height: '100vh',
+      zIndex: 1
+    }}>
+      <Map
+        mapboxAccessToken={TOKEN}
+        initialViewState={{
+          longitude: -74.006,
+          latitude: 40.7128,
+          zoom: 12
+        }}
+        style={{width: "100%", height: "100%"}}
+        mapStyle="mapbox://styles/mapbox/streets-v12"
+        interactive={true}
+      />
+    </div>
+  );
+}
