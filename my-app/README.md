@@ -1,15 +1,4 @@
-# Interactive Map OpenAvenue
-
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Project Description
-
-An interactive map application built with Next.js, Material-UI, and Mapbox integration. Features include:
-- Navigation with persistent sidebar
-- Search functionality
-- Map exploration with multiple layers
-- User profiles and settings
-- Location services and directions
 
 ## Getting Started
 
