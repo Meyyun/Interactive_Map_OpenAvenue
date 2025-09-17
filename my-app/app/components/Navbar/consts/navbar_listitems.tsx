@@ -48,7 +48,7 @@ export const mainNavbarItems = [
         id: 6,
         icon: <SettingsBackupRestoreIcon/>,
         label: 'History',
-        route: '/history',
+        route: '/pages/history',
         hasNavigation: true,
     },
     {
@@ -62,14 +62,14 @@ export const mainNavbarItems = [
         id: 8,
         icon: <PersonIcon/>,
         label: 'Profile',
-        route: '/profile',
+        route: '/pages/Profiles',
         hasNavigation: true,
     },
     {
         id: 9,
         icon: <SettingsIcon/>,
         label: 'Settings',
-        route: '/settings',
+        route: '/pages/Setting',
         hasNavigation: true,
     },
 ];
