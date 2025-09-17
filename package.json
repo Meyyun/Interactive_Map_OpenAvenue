@@ -13,11 +13,9 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@mui/styled-engine-sc": "^7.3.2",
-    "maplibre-gl": "^5.7.1",
     "next": "15.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-map-gl": "^8.0.4",
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
