@@ -43,7 +43,12 @@ export const mainNavbarItems = [
         id: 6,
         icon: <SettingsBackupRestoreIcon/>,
         label: 'History',
+<<<<<<< Updated upstream:app/components/Navbar/consts/navbar_listitems.tsx
         route: '/history',
+=======
+        route: '/pages/history',
+        hasNavigation: true,
+>>>>>>> Stashed changes:my-app/app/components/Navbar/consts/navbar_listitems.tsx
     },
     {
         id: 7,
@@ -55,12 +60,22 @@ export const mainNavbarItems = [
         id: 8,
         icon: <PersonIcon/>,
         label: 'Profile',
+<<<<<<< Updated upstream:app/components/Navbar/consts/navbar_listitems.tsx
         route: '/profile',
+=======
+        route: '/pages/Profile',
+        hasNavigation: true,
+>>>>>>> Stashed changes:my-app/app/components/Navbar/consts/navbar_listitems.tsx
     },
     {
         id: 9,
         icon: <SettingsIcon/>,
         label: 'Settings',
+<<<<<<< Updated upstream:app/components/Navbar/consts/navbar_listitems.tsx
         route: '/settings',
+=======
+        route: '/pages/Setting',
+        hasNavigation: true,
+>>>>>>> Stashed changes:my-app/app/components/Navbar/consts/navbar_listitems.tsx
     },
 ];
