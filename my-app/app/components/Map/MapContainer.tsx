@@ -1,7 +1,7 @@
 'use client'
 import * as React from 'react';
 import { useState } from 'react';
-import Map, {Marker, Popup} from 'react-map-gl/mapbox';
+import Map, {Marker, Popup, Source, Layer} from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapData from './MapData'
 import LocationPinIcon from '@mui/icons-material/LocationPin';
@@ -66,9 +66,22 @@ export default function MapContainer() {
             <div dangerouslySetInnerHTML={{__html:selectedMarker.properties.description}}/>
           </Popup>
         )}
+        <Source id="locations" type="geojson" data={mapData as any}>
+          <Layer 
+            id="location-circles"
+            type="circle"
+            paint={{
+              'circle-radius': 12,
+              'circle-color': '#ff6b6b',
+              'circle-stroke-width': 3,
+              'circle-stroke-color': '#ffffff',
+              'circle-opacity': 0.8
+            }}
+          />
+        </Source>
       
       </Map>
-    
+      
     </div>
   );
 }
