@@ -1,6 +1,5 @@
 import MapContainer from './components/Map/MapContainer';
 import SearchBar from './components/Search/SearchBar';
-import MapboxExample from './components/Map/map_try'
 export default function Home() {
   return (
     <div>
