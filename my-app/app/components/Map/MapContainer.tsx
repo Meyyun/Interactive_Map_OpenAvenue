@@ -1,7 +1,7 @@
 'use client'
 import * as React from 'react';
 import { useState } from 'react';
-import Map, {Marker, Popup, Source, Layer} from 'react-map-gl/mapbox';
+import Map, {Marker, Popup, Source, Layer,NavigationControl} from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapData from './MapData'
 import LocationPinIcon from '@mui/icons-material/LocationPin';
@@ -79,7 +79,9 @@ export default function MapContainer() {
             }}
           />
         </Source>
-      
+        <div style ={{position:'absolute',top:10,right:10}}>
+            <NavigationControl />
+        </div>
       </Map>
       
     </div>
