@@ -3,7 +3,8 @@ import * as React from 'react';
 import { useState } from 'react';
 import Map, {Marker, Popup, Source, Layer,NavigationControl} from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import mapData from './MapData'
+import mapData from './MapData';
+import SearchBar from '../Search/SearchBar';
 import LocationPinIcon from '@mui/icons-material/LocationPin';
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 export default function MapContainer() {
@@ -79,6 +80,9 @@ export default function MapContainer() {
             }}
           />
         </Source>
+        <div style={{position:"absolute",top:0,left:100, zIndex:100,width:"300px",height:"80px",borderRadius:"8px" }}>
+            <SearchBar />
+        </div>
         <div style ={{position:'absolute',top:10,right:10}}>
             <NavigationControl />
         </div>
