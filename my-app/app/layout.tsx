@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from './components/Navbar/Narbar';
 import ApolloWrapper from "./apollo/apolloprovider";
+import './globals.css';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
