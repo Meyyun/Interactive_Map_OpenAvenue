@@ -35,3 +35,25 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Sidebar Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive sidebar positioning */
+@media (max-width: 768px) {
+  .sidebar-container {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    top: 70px !important;
+  }
+}

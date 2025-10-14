@@ -6,14 +6,20 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import mapData from './MapData';
 import SearchBar from '../Search/SearchBar';
 import LocationPinIcon from '@mui/icons-material/LocationPin';
+import { Sidebar } from '../Sidebar/sidebar';
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 export default function MapContainer() {
+
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
-  const [parcelId, setParcelId] = useState<string | null>(null);
+
+  const [parcelId, setParcelId] = useState<string | number | null>(null);
   const [cursor, setCursor] = useState<string>('auto');
   const [hoveredParcelId, setHoveredParcelId] = useState<string | null>(null);
 
-    if (!TOKEN) {
+  const [showSidebar, setShowSidebar] = useState<boolean>(false);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+
+  if (!TOKEN) {
     return (
       <div style={{ padding: '20px', border: '1px solid red', margin: '10px' }}>
         <h3>Map Error</h3>
@@ -22,25 +28,76 @@ export default function MapContainer() {
     );
   }
   const handleClick = React.useCallback((event)=>{
-    const features = event.target.queryRenderedFeatures(event.point, {
-          layers: ["parcel-fill"], // only detect clicks on parcels
-    });
-    if (features.length > 0) {
-      setParcelId(features[0].properties.ID);
-      console.log("Clicked Parcel:", features[0].properties);
+    try {
+      if (!mapLoaded) {
+        console.log("Map not fully loaded yet, skipping click");
+        return;
+      }
+
+      const map = event.target;
+      let features = [];
+      
+      try {
+        // Try to query the parcel-fill layer specifically
+        features = map.queryRenderedFeatures(event.point, {
+          layers: ["parcel-fill"]
+        });
+      } catch (layerError) {
+        console.log("Layer-specific query failed, trying all features:", layerError);
+        
+        // Fallback: query all features and filter by source
+        try {
+          const allFeatures = map.queryRenderedFeatures(event.point);
+          features = allFeatures.filter(f => f.source === 'parcel');
+        } catch (allError) {
+          console.error("All features query failed:", allError);
+          return;
+        }
+      }
+      
+      if (features.length > 0) {
+        console.log("Full feature object:", features[0]);
+        console.log("Feature ID:", features[0].id);
+        console.log("Properties:", features[0].properties);
+        
+        // Use the GUID from properties.ID - this maps to reonomyProperties.parcel_id
+        const clickedParcelId = features[0].properties?.ID;
+        
+        console.log("Mapbox Feature Properties.ID (maps to GraphQL parcel_id):", clickedParcelId);
+        
+        if (!clickedParcelId) {
+          console.error("No ID found in feature properties!");
+          return;
+        }
+        setParcelId(clickedParcelId);
+        setShowSidebar(true);
+        console.log("Setting parcelId to:", clickedParcelId);
+      } else {
+        console.log("No parcel features found at click point");
+      }
+    } catch (error) {
+      console.error("Click handler error:", error);
     }
-  },[]);
+  }, [mapLoaded]);
+
   const handleMouseMove = useCallback((event)=>{
-     const features = event.target.queryRenderedFeatures(event.point, {
-          layers: ["parcel-fill"], // only detect clicks on parcels
-    });
-  if (features.length > 0) {
-      setHoveredParcelId(features[0].id);
-    }
-    else{
+    if (!mapLoaded) return;
+    
+    try {
+      const features = event.target.queryRenderedFeatures(event.point, {
+        layers: ["parcel-fill"]
+      });
+      
+      if (features.length > 0) {
+        setHoveredParcelId(features[0].id);
+      } else {
+        setHoveredParcelId(null);
+      }
+    } catch (error) {
+      // Silently handle mouse move errors
       setHoveredParcelId(null);
     }
-  },[]);
+  }, [mapLoaded]);
 
   const MouseEnter = useCallback(() => setCursor('pointer'), []);
   const MouseLeave = useCallback(() => setCursor('auto'), []);
@@ -66,6 +123,7 @@ export default function MapContainer() {
         interactive={true}
         onClick={handleClick}
         cursor={cursor}
+        onLoad={() => setMapLoaded(true)}
         onMouseEnter={MouseEnter}
         onMouseLeave={() => {
           MouseLeave();
@@ -101,7 +159,10 @@ export default function MapContainer() {
             closeButton={true}
             closeOnClick={false}
           >
-            <div dangerouslySetInnerHTML={{__html:selectedMarker.properties.description}}/>
+            <div 
+              style={{color: 'black'}} 
+              dangerouslySetInnerHTML={{__html:selectedMarker.properties.description}}
+            />
           </Popup>
         )}
         <Source id="locations" type="geojson" data={mapData as any}>
@@ -117,11 +178,11 @@ export default function MapContainer() {
             }}
           />
         </Source>
-        <div style={{position:"absolute",top:0,left:100, zIndex:100,width:"300px",height:"80px",borderRadius:"8px" }}>
+        <div style={{position:"absolute",top:0,left:100, zIndex:100,width:"300px",height:"80px",borderRadius:"8px",color:"black" }}>
             <SearchBar />
         </div>
-        <div style ={{position:'absolute',top:10,right:10}}>
-            <NavigationControl />
+        <div style ={{position:'absolute',top:10,right:15, display:'flex', flexDirection:'column', gap:'10px'}}>
+            <NavigationControl /> 
         </div>
        
       <Source 
@@ -152,12 +213,26 @@ export default function MapContainer() {
                 "#de5656"
               ], //fill interior color
               'fill-opacity':0.5,//transparency
-               'fill-outline-color':'#000000'
+              'fill-outline-color':'#000000'
             }}
           >
           </Layer>
         </Source>
       </Map>
+      
+      {/* Sidebar Component */}
+      {(() => {
+        console.log("Render check - parcelId:", parcelId, "showSidebar:", showSidebar);
+        return showSidebar ? (
+          <Sidebar 
+            parcelId={parcelId} 
+            onClose={() => {
+              setShowSidebar(false);
+              setParcelId(null);
+            }} 
+          />
+        ) : null;
+      })()}
       
     </div>
   );
