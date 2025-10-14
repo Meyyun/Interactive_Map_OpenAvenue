@@ -11,10 +11,10 @@ const Search = styled('div')(({ theme }) => ({
     backgroundColor: '#bbdefb', // Darker blue on hover
   },
   marginLeft: 0,
-  width: '500px',
+  width: '400px', 
   [theme.breakpoints.up('sm')]: {
     marginLeft: 0,
-    width: '300px',
+    width: '350px', 
   },
 }));
 const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -30,14 +30,14 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: 'inherit',
   width: '100%',
   '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
+    padding: theme.spacing(1.5, 2, 1.5, 0), // Increased padding for more space
     // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     [theme.breakpoints.up('sm')]: {
-      width: '12ch',
+      width: '20ch', 
       '&:focus': {
-        width: '20ch',
+        width: '25ch',
       },
     },
   },
@@ -48,14 +48,14 @@ export default function SearchBar() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'left',
-      padding: '10px 0'
+      padding: '10px 0',
     }}>
       <Search>
         <SearchIconWrapper>
           <SearchIcon />
         </SearchIconWrapper>
         <StyledInputBase
-          placeholder="Search places, addresses, or points of interest..."
+          placeholder="Search for your location"
           inputProps={{ 'aria-label': 'search' }}
         />
       </Search>

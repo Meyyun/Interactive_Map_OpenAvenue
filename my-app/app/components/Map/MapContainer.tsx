@@ -6,21 +6,18 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import mapData from './MapData';
 import SearchBar from '../Search/SearchBar';
 import LocationPinIcon from '@mui/icons-material/LocationPin';
-import InfoIcon from '@mui/icons-material/Info';
-import CloseIcon from '@mui/icons-material/Close';
-import { sidebar as Sidebar } from '../Sidebar/sidebar';
-import { useTestParcelIds } from '../../apollo/ReonomyProperties';
+import { Sidebar } from '../Sidebar/sidebar';
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 export default function MapContainer() {
+
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
+
   const [parcelId, setParcelId] = useState<string | number | null>(null);
   const [cursor, setCursor] = useState<string>('auto');
   const [hoveredParcelId, setHoveredParcelId] = useState<string | null>(null);
+
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
-
-  // Test what parcel IDs are available in the database
-  const { data: testData } = useTestParcelIds();
 
   if (!TOKEN) {
     return (
@@ -82,6 +79,7 @@ export default function MapContainer() {
       console.error("Click handler error:", error);
     }
   }, [mapLoaded]);
+
   const handleMouseMove = useCallback((event)=>{
     if (!mapLoaded) return;
     
@@ -161,7 +159,10 @@ export default function MapContainer() {
             closeButton={true}
             closeOnClick={false}
           >
-            <div dangerouslySetInnerHTML={{__html:selectedMarker.properties.description}}/>
+            <div 
+              style={{color: 'black'}} 
+              dangerouslySetInnerHTML={{__html:selectedMarker.properties.description}}
+            />
           </Popup>
         )}
         <Source id="locations" type="geojson" data={mapData as any}>
@@ -177,51 +178,11 @@ export default function MapContainer() {
             }}
           />
         </Source>
-        <div style={{position:"absolute",top:0,left:100, zIndex:100,width:"300px",height:"80px",borderRadius:"8px" }}>
+        <div style={{position:"absolute",top:0,left:100, zIndex:100,width:"300px",height:"80px",borderRadius:"8px",color:"black" }}>
             <SearchBar />
         </div>
-        <div style ={{position:'absolute',top:10,right:10, display:'flex', flexDirection:'column', gap:'10px'}}>
-            <NavigationControl />
-            
-            {/* Data Toggle Button */}
-            <button
-              onClick={() => setShowSidebar(!showSidebar)}
-              style={{
-                width: '40px',
-                height: '40px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                fontSize: '20px',
-                color: parcelId ? '#007bff' : '#666'
-              }}
-              title={showSidebar ? "Hide Property Data" : "Show Property Data"}
-              disabled={!parcelId}
-            >
-              {showSidebar ? <CloseIcon /> : <InfoIcon />}
-            </button>
-            
-            {/* Selected Parcel Indicator */}
-            {parcelId && (
-              <div style={{
-                backgroundColor: '#007bff',
-                color: 'white',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                textAlign: 'center',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                maxWidth: '120px',
-                wordBreak: 'break-all'
-              }}>
-                Parcel: {parcelId.toString().substring(0, 8)}...
-              </div>
-            )}
+        <div style ={{position:'absolute',top:10,right:15, display:'flex', flexDirection:'column', gap:'10px'}}>
+            <NavigationControl /> 
         </div>
        
       <Source 
@@ -252,7 +213,7 @@ export default function MapContainer() {
                 "#de5656"
               ], //fill interior color
               'fill-opacity':0.5,//transparency
-               'fill-outline-color':'#000000'
+              'fill-outline-color':'#000000'
             }}
           >
           </Layer>
@@ -260,7 +221,18 @@ export default function MapContainer() {
       </Map>
       
       {/* Sidebar Component */}
-      {parcelId && showSidebar && <Sidebar parcelId={parcelId} />}
+      {(() => {
+        console.log("Render check - parcelId:", parcelId, "showSidebar:", showSidebar);
+        return showSidebar ? (
+          <Sidebar 
+            parcelId={parcelId} 
+            onClose={() => {
+              setShowSidebar(false);
+              setParcelId(null);
+            }} 
+          />
+        ) : null;
+      })()}
       
     </div>
   );
