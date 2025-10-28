@@ -5,9 +5,8 @@
 This project is designed to empower real estate brokers with data-driven insights and search capabilities, enabling them to efficiently identify new leads and prospects.
 
 Live Demo (Vercel Build):
-👉 https://your-vercel-app.vercel.app
-
-echnologies and Tools
+    <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/9cb5826ab6dc48d0b5ebbcf6ce8b9628-b37e13a2c4f590b2-full-play.gif">
+# echnologies and Tools
 🗺️ Mapbox GL
 
 Used to render interactive maps and visualize property boundaries dynamically.
@@ -19,18 +18,18 @@ Mapbox GL JS Docs: https://docs.mapbox.com/mapbox-gl-js/api/
 
 ⚛️ GraphQL + Apollo Client
 
-Why GraphQL: Simplifies data fetching by allowing the frontend to query exactly the fields it needs.
+Simplifies data fetching by allowing the frontend to query exactly the fields it needs -no ore under or over fetching.
 
 Apollo Client: Handles caching and query management for a seamless and responsive UI experience.
 
 The app uses custom GraphQL hooks:
 
-useParcelByLocation()
+useParcelByLocation() -> Fetch parcel information based on map location
 
-usePropertyByParcelId()
+usePropertyByParcelId() -> Retrieves property data by parcel ID
 These functions fetch data from Azure’s GraphQL endpoint.
 
-📚 Reference: Apollo Client Documentation
+📚 Reference: Apollo Client Documentation :https://www.apollographql.com/docs/react
 
 ☁️ Azure Data API Builder
 
