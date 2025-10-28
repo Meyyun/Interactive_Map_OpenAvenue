@@ -3,9 +3,11 @@ import { usePropertyData } from "../../apollo/ReonomyProperties";
 
 export const Sidebar = ({ 
     parcelId, 
+    address,
     onClose 
 }: { 
     parcelId: string | number | null;
+    address?: string | null;
     onClose?: () => void;
 }) => {
     console.log("Sidebar received parcelId (from Mapbox):", parcelId);
@@ -14,11 +16,12 @@ export const Sidebar = ({
 
     // Always render the sidebar container with proper styling
     const renderContent = () => {
-        if (!parcelId) {
+        if (!parcelId || parcelId === '') {
             return (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                    <h3>No Property Selected</h3>
-                    <p>Click on a property on the map to view its details</p>
+                    <h3>No Property Found</h3>
+                    {address && <p>Address: <span style={{color:'#2196f3'}}>{address}</span></p>}
+                    <p>Click on a property on the map or try another address.</p>
                 </div>
             );
         }
@@ -143,7 +146,7 @@ export const Sidebar = ({
         <div style={{
             position: 'fixed',
             top: '0',              
-            left: '60px',          
+            left: '0px',          
             width: '400px',
             height: '100vh',       
             backgroundColor: 'white',
@@ -181,7 +184,25 @@ export const Sidebar = ({
                     ✕
                 </button>
             </div>
-            
+            {/* Address section at top */}
+            {(() => {
+                // Prefer address prop, fallback to property.address if available
+                const displayAddress = address || (property && property.address) || null;
+                return displayAddress ? (
+                    <div style={{
+                        marginBottom: '16px',
+                        padding: '8px 0',
+                        fontSize: '16px',
+                        color: '#333',
+                        background: '#e3f2fd',
+                        borderRadius: '6px',
+                        textAlign: 'center',
+                        fontWeight: 500
+                    }}>
+                        <span>📍 {displayAddress}</span>
+                    </div>
+                ) : null;
+            })()}
             {/* Render content based on state */}
             {renderContent()}
         </div>

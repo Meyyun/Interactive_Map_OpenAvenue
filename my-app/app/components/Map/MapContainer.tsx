@@ -1,23 +1,63 @@
 'use client'
 import * as React from 'react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Map, {Marker, Popup, Source, Layer, NavigationControl} from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapData from './MapData';
 import SearchBar from '../Search/SearchBar';
 import LocationPinIcon from '@mui/icons-material/LocationPin';
 import { Sidebar } from '../Sidebar/sidebar';
+import type { AddressSearchResult } from '../../utils/geocoding';
+
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 export default function MapContainer() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mapRef = useRef<any>(null);
 
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
-
   const [parcelId, setParcelId] = useState<string | number | null>(null);
+  const [clickedAddress, setClickedAddress] = useState<string | null>(null);
   const [cursor, setCursor] = useState<string>('auto');
   const [hoveredParcelId, setHoveredParcelId] = useState<string | null>(null);
-
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+
+  // Handle address search results
+  const handleAddressSearch = useCallback((searchResult: AddressSearchResult) => {
+    console.log(" Address search result:", searchResult);
+  const { parcelId: searchedParcelId, coordinates, address } = searchResult;
+    setParcelId(searchedParcelId);
+    setClickedAddress(address || null);
+    setShowSidebar(true);
+    if (coordinates) {
+      mapRef.current.flyTo({
+        center: [coordinates.longitude, coordinates.latitude],
+        zoom: 18,
+        duration: 2000
+      });
+    }
+    console.log(`🎯 Flying to: ${address} at [${coordinates.longitude}, ${coordinates.latitude}]`);
+  }, []);
+
+  // Read parcel from URL on mount (add URL persistence to existing state)
+  useEffect(() => {
+    const parcelFromUrl = searchParams.get('parcel');
+    if (parcelFromUrl) {
+      setParcelId(parcelFromUrl);
+      setShowSidebar(true);
+    }
+  }, [searchParams]);
+
+  // Update URL when parcelId changes
+  useEffect(() => {
+    if (parcelId && showSidebar) {
+      router.push(`/?parcel=${parcelId}`, { scroll: false });
+    } else if (!showSidebar) {
+      router.push('/', { scroll: false });
+    }
+  }, [parcelId, showSidebar, router]);
 
   if (!TOKEN) {
     return (
@@ -59,19 +99,21 @@ export default function MapContainer() {
         console.log("Full feature object:", features[0]);
         console.log("Feature ID:", features[0].id);
         console.log("Properties:", features[0].properties);
-        
         // Use the GUID from properties.ID - this maps to reonomyProperties.parcel_id
         const clickedParcelId = features[0].properties?.ID;
-        
+        const clickedAddr = features[0].properties?.address || null;
         console.log("Mapbox Feature Properties.ID (maps to GraphQL parcel_id):", clickedParcelId);
-        
         if (!clickedParcelId) {
           console.error("No ID found in feature properties!");
           return;
         }
         setParcelId(clickedParcelId);
+        setClickedAddress(clickedAddr);
         setShowSidebar(true);
         console.log("Setting parcelId to:", clickedParcelId);
+        if (clickedAddr) {
+          console.log("Clicked address:", clickedAddr);
+        }
       } else {
         console.log("No parcel features found at click point");
       }
@@ -112,6 +154,7 @@ export default function MapContainer() {
       zIndex: 1
     }}>
       <Map
+        ref={mapRef}
         mapboxAccessToken={TOKEN}
         initialViewState={{
           longitude: -74.006,
@@ -178,8 +221,9 @@ export default function MapContainer() {
             }}
           />
         </Source>
-        <div style={{position:"absolute",top:0,left:100, zIndex:100,width:"300px",height:"80px",borderRadius:"8px",color:"black" }}>
-            <SearchBar />
+        <div style={{position:"absolute",top:0,left:20, zIndex:100,width:"300px",height:"80px",borderRadius:"8px",color:"black" }}>
+            
+            <SearchBar onAddressSelect={handleAddressSearch} />
         </div>
         <div style ={{position:'absolute',top:10,right:15, display:'flex', flexDirection:'column', gap:'10px'}}>
             <NavigationControl /> 
@@ -225,15 +269,16 @@ export default function MapContainer() {
         console.log("Render check - parcelId:", parcelId, "showSidebar:", showSidebar);
         return showSidebar ? (
           <Sidebar 
-            parcelId={parcelId} 
+            parcelId={parcelId}
+            address={clickedAddress}
             onClose={() => {
               setShowSidebar(false);
               setParcelId(null);
+              setClickedAddress(null);
             }} 
           />
         ) : null;
       })()}
-      
-    </div>
+      </div>
   );
 }
