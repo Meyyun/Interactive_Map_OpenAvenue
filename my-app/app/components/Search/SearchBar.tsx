@@ -1,10 +1,10 @@
-// Extend window type for custom MapboxGL function
+'use client'
 declare global {
   interface Window {
     getMapboxFeatureByCoordinates?: (lat: number, lng: number) => any;
   }
 }
-'use client'
+
 import { useParcelIdFromTaxAssessor } from '../../apollo/TaxAssessors';
 import * as React from 'react';
 import { useState } from 'react';
