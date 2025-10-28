@@ -1,7 +1,23 @@
 "use client";
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+// Hook to get parcelId by lat/lng using TaxAssessor
+import { useLazyQuery } from '@apollo/client/react';
 
+export function useParcelIdFromTaxAssessor() {
+  const [getTaxAssessor] = useLazyQuery<TaxAssessorsData>(GET_TAX_ASSESSORS);
+  // Returns a function to call with lat/lng
+  const fetchParcelId = async (latitude, longitude) => {
+    const { data } = await getTaxAssessor();
+    if (!data || !data.attomTaxAssessors || !data.attomTaxAssessors.items) return null;
+    // Find the item with matching lat/lng (exact match or nearest)
+    const found = data.attomTaxAssessors.items.find(
+      item => item.PropertyLatitude === latitude && item.PropertyLongitude === longitude
+    );
+    return found?.parcel_id || null;
+  };
+  return { fetchParcelId };
+}
 const GET_TAX_ASSESSORS = gql`
   query {
     attomTaxAssessors {

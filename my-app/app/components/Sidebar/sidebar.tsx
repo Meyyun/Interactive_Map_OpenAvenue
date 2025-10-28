@@ -10,9 +10,23 @@ export const Sidebar = ({
     address?: string | null;
     onClose?: () => void;
 }) => {
-    console.log("Sidebar received parcelId (from Mapbox):", parcelId);
-    console.log("This will query GraphQL property_id field with this value");
+    // Debug logging for troubleshooting property lookup
+    console.log("[SIDEBAR] Received parcelId:", parcelId);
     const { loading, error, property } = usePropertyData(parcelId);
+    if (loading) {
+        console.log("[SIDEBAR] Property data loading...");
+    }
+    if (error) {
+        console.error("[SIDEBAR] Property query error:", error.message, error);
+    }
+    if (!parcelId || parcelId === '') {
+        console.warn("[SIDEBAR] No parcelId provided to sidebar.");
+    }
+    if (property) {
+        console.log("[SIDEBAR] Property data found:", property);
+    } else {
+        console.warn("[SIDEBAR] No property data found for parcelId:", parcelId);
+    }
 
     // Always render the sidebar container with proper styling
     const renderContent = () => {
@@ -165,7 +179,8 @@ export const Sidebar = ({
                 alignItems: 'center', 
                 marginBottom: '20px',
                 borderBottom: '2px solid #2196f3',
-                paddingBottom: '10px'
+                paddingBottom: '10px',
+                position: 'sticky'
             }}>
                 <h2 style={{ margin: 0, color: '#2196f3' }}>Property Details</h2>
                 <button 
@@ -186,8 +201,8 @@ export const Sidebar = ({
             </div>
             {/* Address section at top */}
             {(() => {
-                // Prefer address prop, fallback to property.address if available
-                const displayAddress = address || (property && property.address) || null;
+                // Prefer address prop, fallback to property.address_line1 if available
+                const displayAddress = address || (property && property.address_line1) || null;
                 return displayAddress ? (
                     <div style={{
                         marginBottom: '16px',
@@ -199,7 +214,7 @@ export const Sidebar = ({
                         textAlign: 'center',
                         fontWeight: 500
                     }}>
-                        <span>📍 {displayAddress}</span>
+                        <span><b>Address:</b> {displayAddress}</span>
                     </div>
                 ) : null;
             })()}

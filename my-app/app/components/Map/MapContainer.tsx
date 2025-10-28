@@ -7,6 +7,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import mapData from './MapData';
 import SearchBar from '../Search/SearchBar';
 import LocationPinIcon from '@mui/icons-material/LocationPin';
+import { reverseGeocode } from '../../utils/googlePlacesClient';
 import { Sidebar } from '../Sidebar/sidebar';
 import type { AddressSearchResult } from '../../utils/geocoding';
 
@@ -96,19 +97,39 @@ export default function MapContainer() {
       }
       
       if (features.length > 0) {
-        console.log("Full feature object:", features[0]);
-        console.log("Feature ID:", features[0].id);
-        console.log("Properties:", features[0].properties);
+        const feature = features[0];
+        console.log("Full feature object:", feature);
+        console.log("Feature ID:", feature.id);
+        console.log("Properties:", feature.properties);
         // Use the GUID from properties.ID - this maps to reonomyProperties.parcel_id
-        const clickedParcelId = features[0].properties?.ID;
-        const clickedAddr = features[0].properties?.address || null;
+        const clickedParcelId = feature.properties?.ID;
+        let clickedAddr = feature.properties?.address || null;
         console.log("Mapbox Feature Properties.ID (maps to GraphQL parcel_id):", clickedParcelId);
         if (!clickedParcelId) {
           console.error("No ID found in feature properties!");
           return;
         }
+        // Always extract coordinates from feature
+        let lat = null, lng = null;
+        if (feature.geometry?.type === 'Point') {
+          [lng, lat] = feature.geometry.coordinates;
+        } else if (feature.geometry?.type === 'Polygon' && feature.geometry.coordinates?.length) {
+          // Calculate centroid for polygons
+          const coords = feature.geometry.coordinates[0];
+          let sumX = 0, sumY = 0;
+          coords.forEach(([x, y]) => { sumX += x; sumY += y; });
+          lng = sumX / coords.length;
+          lat = sumY / coords.length;
+        }
+        // Use reverse geocoding if no address
+        if (!clickedAddr && lat !== null && lng !== null) {
+          reverseGeocode(lat, lng).then((result) => {
+            setClickedAddress(result.address);
+          });
+        } else {
+          setClickedAddress(clickedAddr);
+        }
         setParcelId(clickedParcelId);
-        setClickedAddress(clickedAddr);
         setShowSidebar(true);
         console.log("Setting parcelId to:", clickedParcelId);
         if (clickedAddr) {

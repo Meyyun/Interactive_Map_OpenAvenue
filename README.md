@@ -1,7 +1,8 @@
-Description
+# An Interactive Map Application for Real Estate Prospecting
 
-This project empowers real estate brokers and property analysts with powerful data-driven insights and map-based search tools to identify new leads, visualize parcel boundaries, and explore property information interactively.
-Through seamless integration of Mapbox, Google APIs, and GraphQL (Apollo Client), the application delivers a fast, responsive, and visually engaging interface for location intelligence and prospecting.
+# Description
+
+This project is designed to empower real estate brokers with data-driven insights and search capabilities, enabling them to efficiently identify new leads and prospects.
 
 Live Demo (Vercel Build):
 👉 https://your-vercel-app.vercel.app

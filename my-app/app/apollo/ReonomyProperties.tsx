@@ -6,16 +6,21 @@ import { useQuery, useLazyQuery } from "@apollo/client/react";
 export const GET_PARCEL = gql`
   query getParcel($latitude: Float!, $longitude: Float!) {
     executeGetParcelByLocation(longitude: $longitude, latitude: $latitude) {
-      parcel_id: ID
+      ID
+      ID
     }
-  }
+      latitude
+      longitude
+    }
 `;
 
-// Query to get property by parcel ID (for address search results)
+ //get property by parcel ID (for address search results)
 export const GET_PROPERTY = gql`
   query getProperty($parcelId: String!) {
     reonomyProperties(filter: {parcel_id: {eq: $parcelId}}) {
       items {
+        property_id
+        parcel_id
         address_line1
       }
     }
@@ -172,6 +177,6 @@ export function usePropertyByParcelId() {
     errorPolicy: "all"
   });
 
-  return { getPropertyByParcelId };
+  return { 
+getPropertyByParcelId };
 }
-

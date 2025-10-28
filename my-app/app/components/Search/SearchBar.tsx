@@ -1,4 +1,5 @@
 'use client'
+import { useParcelIdFromTaxAssessor } from '../../apollo/TaxAssessors';
 import * as React from 'react';
 import { useState } from 'react';
 import { styled } from '@mui/material/styles';
@@ -7,6 +8,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { CircularProgress } from '@mui/material';
 import { geocodeAddress, type AddressSearchResult } from '../../utils/geocoding';
 import { useParcelByLocation } from '../../apollo/ReonomyProperties';
+import { usePropertyByParcelId } from '../../apollo/ReonomyProperties';
 import { autocomplete, getPlaceDetails } from '../../utils/googlePlacesClient';
 
 interface SearchBarProps {
@@ -51,6 +53,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function SearchBar({ onAddressSelect }: SearchBarProps) {
+  const { fetchParcelId } = useParcelIdFromTaxAssessor();
+  const { getPropertyByParcelId } = usePropertyByParcelId();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +100,22 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
 
   // Select suggestion → fetch details → query parcel
   const handleSuggestionSelect = async (prediction: any) => {
+      // Get place details and coordinates first
+      const details = await getPlaceDetails(prediction.place_id);
+      if (!details) {
+        setError('Could not get place details');
+        return;
+      }
+      const coords = details.geometry.location;
+      const latitude = Number(coords.lat);
+      const longitude = Number(coords.lng);
+      // Try TaxAssessor lookup for parcelId
+      const taxParcelId = await fetchParcelId(latitude, longitude);
+      let parcelId = null;
+      if (taxParcelId) {
+        console.log('[DEBUG] TaxAssessor parcelId:', taxParcelId);
+        parcelId = taxParcelId;
+      }
     setLoading(true);
     setError(null);
     setShowDropdown(false);
@@ -103,8 +123,10 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
 
     try {
       const details = await getPlaceDetails(prediction.place_id);
+      console.log('[DEBUG] getPlaceDetails result:', details);
       if (!details) {
         setError('Could not get place details');
+        console.error('[DEBUG] No details returned from getPlaceDetails');
         return;
       }
 
@@ -112,32 +134,36 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
       const latitude = Number(coords.lat);
       const longitude = Number(coords.lng);
 
-      if (DEBUG) {
-        console.log('📍 [DEBUG] Place selected:', prediction.description);
-        console.log('🌎 [DEBUG] Coordinates from Google Place Details:', { latitude, longitude });
-      }
+      console.log('[DEBUG] Place selected:', prediction.description);
+      console.log('[DEBUG] Coordinates from Google Place Details:', { latitude, longitude });
 
-      // Try to find the Mapbox feature at these coordinates (pseudo-code, you may need to adapt)
-      // This assumes you have access to map features or a helper to get the feature by coordinates
       let parcelId = null;
       if (window.getMapboxFeatureByCoordinates) {
         const feature = window.getMapboxFeatureByCoordinates(latitude, longitude);
+        console.log('[DEBUG] Mapbox feature found for coords:', feature);
         parcelId = feature?.properties?.ID || null;
-        if (DEBUG) console.log('🔗 [DEBUG] Mapbox feature found for coords:', feature);
+        console.log('[DEBUG] Mapbox feature parcelId:', parcelId);
+      } else {
+        console.log('[DEBUG] window.getMapboxFeatureByCoordinates not available');
       }
 
-      // Fallback: use GraphQL lookup if no Mapbox feature found
       if (!parcelId) {
+        console.log('[DEBUG] No parcelId from Mapbox, trying GraphQL parcel lookup...');
         const result = await getParcelByLocation({ variables: { latitude, longitude } });
+        console.log('[DEBUG] GraphQL getParcelByLocation result:', result);
         parcelId =
           (result.data as any)?.executeGetParcelByLocation?.parcel_id ??
           (result.data as any)?.executeGetParcelByLocation?.ID;
-        if (DEBUG) {
-          console.log('🧭 [DEBUG] GraphQL Parcel Lookup Result:', result.data);
+        console.log('[DEBUG] GraphQL parcelId:', parcelId);
+        if (parcelId) {
+          // Fetch property data by parcelId and log it
+          const propertyResult = await getPropertyByParcelId(parcelId);
+          console.log('[DEBUG] Property data for parcelId:', parcelId, propertyResult);
         }
       }
 
-      // Always pass address to sidebar, even if parcelId is missing
+      console.log('[DEBUG] Final parcelId to pass to sidebar:', parcelId);
+      console.log('[DEBUG] Address to pass to sidebar:', details.formatted_address);
       if (onAddressSelect) {
         onAddressSelect({
           parcelId: parcelId || '',
@@ -147,17 +173,15 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
       }
       if (parcelId && parcelId !== "null" && parcelId !== "undefined" && parcelId !== "") {
         setQuery('');
+        console.log('[DEBUG] Valid parcelId found, clearing query.');
       } else {
         setError('No property found at this location. Please try another address or check the map.');
-        if (DEBUG) {
-          console.error('❌ [DEBUG] Invalid parcelId:', parcelId);
-          console.error('❌ [DEBUG] Coordinates:', { latitude, longitude });
-          console.error('❌ [DEBUG] Last GraphQL response:', result?.data);
-        }
+        console.error('[DEBUG] Invalid parcelId:', parcelId);
+        console.error('[DEBUG] Coordinates:', { latitude, longitude });
       }
     } catch (err) {
       setError('Search failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
-      if (DEBUG) console.error('❌ [DEBUG] Error in handleSuggestionSelect:', err);
+      console.error('[DEBUG] Error in handleSuggestionSelect:', err);
     } finally {
       setLoading(false);
     }
@@ -173,43 +197,55 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
 
   // Manual search fallback
   const handleSearch = async () => {
+      // Try TaxAssessor lookup for parcelId
+      const taxParcelId = await fetchParcelId(latitude, longitude);
+      if (taxParcelId) {
+        console.log('[DEBUG] TaxAssessor parcelId (manual search):', taxParcelId);
+        parcelId = taxParcelId;
+      }
     if (!query.trim()) return;
     setLoading(true);
     setError(null);
 
     try {
       const coordinates = await geocodeAddress(query);
+      console.log('[DEBUG] geocodeAddress result:', coordinates);
       const latitude = Number(coordinates.latitude);
       const longitude = Number(coordinates.longitude);
 
-      if (DEBUG) {
-        console.log('🔍 [DEBUG] Geocoded address:', query);
-        console.log('🌎 [DEBUG] Coordinates from geocodeAddress:', { latitude, longitude });
-      }
+      console.log('[DEBUG] Geocoded address:', query);
+      console.log('[DEBUG] Coordinates from geocodeAddress:', { latitude, longitude });
 
       const result = await getParcelByLocation({ variables: { latitude, longitude } });
+      console.log('[DEBUG] GraphQL getParcelByLocation result (manual search):', result);
       const parcelId =
         (result.data as any)?.executeGetParcelByLocation?.parcel_id ??
         (result.data as any)?.executeGetParcelByLocation?.ID;
-
-      if (DEBUG) {
-        console.log('🧭 [DEBUG] GraphQL Parcel Lookup Result (manual search):', result.data);
-      }
+      console.log('[DEBUG] GraphQL parcelId (manual search):', parcelId);
+        if (parcelId) {
+          // Fetch property data by parcelId and log it
+          const propertyResult = await getPropertyByParcelId(parcelId);
+          console.log('[DEBUG] Property data for parcelId (manual search):', parcelId, propertyResult);
+        }
 
       if (parcelId && onAddressSelect) {
+        console.log('[DEBUG] Passing parcelId to sidebar:', parcelId);
         onAddressSelect({
           parcelId,
           coordinates: { latitude, longitude },
           address: query,
         });
         setQuery('');
+        console.log('[DEBUG] Valid parcelId found, clearing query.');
       } else {
         setError('No parcel    found at this location');
+        console.error('[DEBUG] Invalid parcelId (manual search):', parcelId);
+        console.error('[DEBUG] Coordinates:', { latitude, longitude });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError('Search failed: ' + message);
-      if (DEBUG) console.error('❌ [DEBUG] Error in handleSearch:', err);
+      console.error('[DEBUG] Error in handleSearch:', err);
     } finally {
       setLoading(false);
     }
