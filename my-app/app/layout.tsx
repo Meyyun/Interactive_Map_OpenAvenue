@@ -29,7 +29,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ApolloWrapper>
-        <Navbar />
         <main style={{ marginLeft: '60px', padding: '20px', minHeight: '100vh' }}>
           {children}
         </main>

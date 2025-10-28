@@ -1,40 +1,52 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# An Interactive Map Application for Real Estate Prospecting
 
-## Getting Started
+# Description
 
-First, run the development server:
+This project is designed to empower real estate brokers with data-driven insights and search capabilities, enabling them to efficiently identify new leads and prospects.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Live Demo (Vercel Build):
+👉 https://your-vercel-app.vercel.app
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+echnologies and Tools
+🗺️ Mapbox GL
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Used to render interactive maps and visualize property boundaries dynamically.
+Custom tilesets were created and hosted in Mapbox Studio to display parcel and zoning data.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Mapbox Studio: https://studio.mapbox.com/
 
-## Learn More
+Mapbox GL JS Docs: https://docs.mapbox.com/mapbox-gl-js/api/
 
-To learn more about Next.js, take a look at the following resources:
+⚛️ GraphQL + Apollo Client
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Why GraphQL: Simplifies data fetching by allowing the frontend to query exactly the fields it needs.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Apollo Client: Handles caching and query management for a seamless and responsive UI experience.
 
-## Deploy on Vercel
+The app uses custom GraphQL hooks:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+useParcelByLocation()
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# Interactive_Map_OpenAvenue
->>>>>>> FolderFixed
+usePropertyByParcelId()
+These functions fetch data from Azure’s GraphQL endpoint.
+
+📚 Reference: Apollo Client Documentation
+
+☁️ Azure Data API Builder
+
+The backend GraphQL layer is powered by Azure Data API Builder for SQL databases, enabling rapid deployment of a scalable GraphQL endpoint.
+It connects property datasets directly to the frontend via Apollo Client.
+
+📚 Reference: Azure Data API Builder
+
+🗺️ Google APIs
+
+Used for address search, geocoding, and place details within the custom search bar component.
+
+Places API (Autocomplete): Suggests addresses as users type.
+
+Place Details API: Fetches precise coordinates (lat/lng) for selected addresses.
+
+Geocoding API: Converts geographic coordinates into readable addresses.
+
+Street View API (optional): Can be integrated to show panoramic street-level images.

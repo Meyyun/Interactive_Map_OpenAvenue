@@ -1,24 +1,33 @@
 "use client";
 import { gql } from "@apollo/client";
-import { useQuery } from "@apollo/client/react";
+import { useQuery, useLazyQuery } from "@apollo/client/react";
 
-// Test query for specific property_id
-export const GET_PROPERTY_BY_SPECIFIC_ID = gql`
-  query GetPropertyBySpecificId($propertyId: String!) {
-    reonomyProperties(where: { property_id: { eq: $propertyId } }) {
+// Query to get parcel ID by coordinates (for address search)
+export const GET_PARCEL = gql`
+  query getParcel($latitude: Float!, $longitude: Float!) {
+    executeGetParcelByLocation(longitude: $longitude, latitude: $latitude) {
+      ID
+      ID
+    }
+      latitude
+      longitude
+    }
+`;
+
+ //get property by parcel ID (for address search results)
+export const GET_PROPERTY = gql`
+  query getProperty($parcelId: String!) {
+    reonomyProperties(filter: {parcel_id: {eq: $parcelId}}) {
       items {
         property_id
         parcel_id
-        asset_type
-        municipality
-        year_built
-        building_area
+        address_line1
       }
     }
   }
 `;
 
-// Fixed query using correct GraphQL syntax with filter
+// Main GraphQL query using correct filter syntax
 export const GET_PROPERTY_BY_PROPERTY_ID = gql`
   query GetPropertyByParcelId($filter: ReonomyPropertyFilterInput) {
     reonomyProperties(filter: $filter) {
@@ -149,4 +158,25 @@ export function usePropertyData(parcelId: string | number | null) {
     error,
     property,
   };
+}
+
+// Hook for address search - get parcel ID by coordinates
+export function useParcelByLocation() {
+  const [getParcelByLocation] = useLazyQuery(GET_PARCEL, {
+    fetchPolicy: "no-cache",
+    errorPolicy: "all"
+  });
+
+  return { getParcelByLocation };
+}
+
+// Hook for address search - get property details by parcel ID
+export function usePropertyByParcelId() {
+  const [getPropertyByParcelId] = useLazyQuery(GET_PROPERTY, {
+    fetchPolicy: "no-cache", 
+    errorPolicy: "all"
+  });
+
+  return { 
+getPropertyByParcelId };
 }
