@@ -4,7 +4,7 @@
 
 This project is designed to empower real estate brokers with data-driven insights and search capabilities, enabling them to efficiently identify new leads and prospects.
 
-Live Demo (Vercel Build):
+Live Demo:
     <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/9cb5826ab6dc48d0b5ebbcf6ce8b9628-b37e13a2c4f590b2-full-play.gif">
 # echnologies and Tools
 🗺️ Mapbox GL
@@ -29,14 +29,12 @@ useParcelByLocation() -> Fetch parcel information based on map location
 usePropertyByParcelId() -> Retrieves property data by parcel ID
 These functions fetch data from Azure’s GraphQL endpoint.
 
-📚 Reference: Apollo Client Documentation :https://www.apollographql.com/docs/react
+📚 Reference: Apollo Client Documentation:https://www.apollographql.com/docs/react
 
 ☁️ Azure Data API Builder
 
 The backend GraphQL layer is powered by Azure Data API Builder for SQL databases, enabling rapid deployment of a scalable GraphQL endpoint.
 It connects property datasets directly to the frontend via Apollo Client.
-
-📚 Reference: Azure Data API Builder
 
 🗺️ Google APIs
 
