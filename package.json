@@ -1,0 +1,9 @@
+{
+  "name": "interactive-map-open-avenue",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd my-app && npm run build",
+    "dev": "cd my-app && npm run dev",
+    "start": "cd my-app && npm run start"
+  }
+}

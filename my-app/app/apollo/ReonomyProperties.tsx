@@ -7,7 +7,6 @@ export const GET_PARCEL = gql`
   query getParcel($latitude: Float!, $longitude: Float!) {
     executeGetParcelByLocation(longitude: $longitude, latitude: $latitude) {
       ID
-      ID
     }
       latitude
       longitude

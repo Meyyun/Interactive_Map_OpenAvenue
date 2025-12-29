@@ -106,28 +106,13 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
 
   // Select suggestion → fetch details → query parcel
   const handleSuggestionSelect = async (prediction: any) => {
-      // Get place details and coordinates first
-      const details = await getPlaceDetails(prediction.place_id);
-      if (!details) {
-        setError('Could not get place details');
-        return;
-      }
-      const coords = details.geometry.location;
-      const latitude = Number(coords.lat);
-      const longitude = Number(coords.lng);
-      // Try TaxAssessor lookup for parcelId
-      const taxParcelId = await fetchParcelId(latitude, longitude);
-      let parcelId = null;
-      if (taxParcelId) {
-        console.log('[DEBUG] TaxAssessor parcelId:', taxParcelId);
-        parcelId = taxParcelId;
-      }
     setLoading(true);
     setError(null);
     setShowDropdown(false);
     setQuery(prediction.description);
 
     try {
+      // Get place details and coordinates first
       const details = await getPlaceDetails(prediction.place_id);
       console.log('[DEBUG] getPlaceDetails result:', details);
       if (!details) {
@@ -143,33 +128,62 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
       console.log('[DEBUG] Place selected:', prediction.description);
       console.log('[DEBUG] Coordinates from Google Place Details:', { latitude, longitude });
 
-      let parcelId = null;
-      if (window.getMapboxFeatureByCoordinates) {
-        const feature = window.getMapboxFeatureByCoordinates(latitude, longitude);
-        console.log('[DEBUG] Mapbox feature found for coords:', feature);
-        parcelId = feature?.properties?.ID || null;
-        console.log('[DEBUG] Mapbox feature parcelId:', parcelId);
-      } else {
+      let parcelId: string | null = null;
+
+      // Try TaxAssessor lookup for parcelId first
+      try {
+        const taxParcelId = await fetchParcelId(latitude, longitude);
+        if (taxParcelId) {
+          console.log('[DEBUG] TaxAssessor parcelId:', taxParcelId);
+          parcelId = taxParcelId;
+        }
+      } catch (err) {
+        console.warn('[DEBUG] TaxAssessor lookup failed:', err);
+      }
+
+      // If no parcelId from TaxAssessor, try Mapbox feature lookup
+      if (!parcelId && window.getMapboxFeatureByCoordinates) {
+        try {
+          const feature = window.getMapboxFeatureByCoordinates(latitude, longitude);
+          console.log('[DEBUG] Mapbox feature found for coords:', feature);
+          parcelId = feature?.properties?.ID || null;
+          console.log('[DEBUG] Mapbox feature parcelId:', parcelId);
+        } catch (err) {
+          console.warn('[DEBUG] Mapbox feature lookup failed:', err);
+        }
+      } else if (!parcelId) {
         console.log('[DEBUG] window.getMapboxFeatureByCoordinates not available');
       }
 
+      // If still no parcelId, try GraphQL parcel lookup
       if (!parcelId) {
-        console.log('[DEBUG] No parcelId from Mapbox, trying GraphQL parcel lookup...');
-        const result = await getParcelByLocation({ variables: { latitude, longitude } });
-        console.log('[DEBUG] GraphQL getParcelByLocation result:', result);
-        parcelId =
-          (result.data as any)?.executeGetParcelByLocation?.parcel_id ??
-          (result.data as any)?.executeGetParcelByLocation?.ID;
-        console.log('[DEBUG] GraphQL parcelId:', parcelId);
-        if (parcelId) {
-          // Fetch property data by parcelId and log it
+        try {
+          console.log('[DEBUG] No parcelId from previous methods, trying GraphQL parcel lookup...');
+          const result = await getParcelByLocation({ variables: { latitude, longitude } });
+          console.log('[DEBUG] GraphQL getParcelByLocation result:', result);
+          parcelId =
+            (result.data as any)?.executeGetParcelByLocation?.parcel_id ??
+            (result.data as any)?.executeGetParcelByLocation?.ID;
+          console.log('[DEBUG] GraphQL parcelId:', parcelId);
+        } catch (err) {
+          console.warn('[DEBUG] GraphQL parcel lookup failed:', err);
+        }
+      }
+
+      // Fetch property data if we have a valid parcelId
+      if (parcelId) {
+        try {
           const propertyResult = await getPropertyByParcelId(parcelId);
           console.log('[DEBUG] Property data for parcelId:', parcelId, propertyResult);
+        } catch (err) {
+          console.warn('[DEBUG] Property data fetch failed for parcelId:', parcelId, err);
         }
       }
 
       console.log('[DEBUG] Final parcelId to pass to sidebar:', parcelId);
       console.log('[DEBUG] Address to pass to sidebar:', details.formatted_address);
+      
+      // Always call onAddressSelect with the address and coordinates
       if (onAddressSelect) {
         onAddressSelect({
           parcelId: parcelId || '',
@@ -177,13 +191,14 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
           address: details.formatted_address,
         });
       }
+
+      // Check if we found a valid parcelId
       if (parcelId && parcelId !== "null" && parcelId !== "undefined" && parcelId !== "") {
         setQuery('');
         console.log('[DEBUG] Valid parcelId found, clearing query.');
       } else {
-        setError('No property found at this location. Please try another address or check the map.');
-        console.error('[DEBUG] Invalid parcelId:', parcelId);
-        console.error('[DEBUG] Coordinates:', { latitude, longitude });
+        console.warn('[DEBUG] No valid parcelId found for coordinates:', { latitude, longitude });
+        console.warn('[DEBUG] Address:', details.formatted_address);
       }
     } catch (err) {
       setError('Search failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
