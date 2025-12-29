@@ -2,8 +2,10 @@
   "name": "interactive-map-open-avenue",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd my-app && npm run build",
-    "dev": "cd my-app && npm run dev",
-    "start": "cd my-app && npm run start"
-  }
+    "build": "npm run build --prefix my-app",
+    "dev": "npm run dev --prefix my-app",
+    "start": "npm run start --prefix my-app",
+    "install": "npm install --prefix my-app"
+  },
+  "workspaces": ["my-app"]
 }
