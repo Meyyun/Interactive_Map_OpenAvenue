@@ -1,6 +1,7 @@
 'use client';
 
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client/react';
 
 const GET_TAX_ASSESSORS = gql`
   query {
