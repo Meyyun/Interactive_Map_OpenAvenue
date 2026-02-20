@@ -218,12 +218,6 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
 
   // Manual search fallback
   const handleSearch = async () => {
-      // Try TaxAssessor lookup for parcelId
-      const taxParcelId = await fetchParcelId(latitude, longitude);
-      if (taxParcelId) {
-        console.log('[DEBUG] TaxAssessor parcelId (manual search):', taxParcelId);
-        parcelId = taxParcelId;
-      }
     if (!query.trim()) return;
     setLoading(true);
     setError(null);
@@ -237,16 +231,27 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
       console.log('[DEBUG] Geocoded address:', query);
       console.log('[DEBUG] Coordinates from geocodeAddress:', { latitude, longitude });
 
-      const result = await getParcelByLocation({ variables: { latitude, longitude } });
-      console.log('[DEBUG] GraphQL getParcelByLocation result (manual search):', result);
-      const parcelId =
-        (result.data as any)?.executeGetParcelByLocation?.parcel_id ??
-        (result.data as any)?.executeGetParcelByLocation?.ID;
-      console.log('[DEBUG] GraphQL parcelId (manual search):', parcelId);
-        if (parcelId) {
-          // Fetch property data by parcelId and log it
-          const propertyResult = await getPropertyByParcelId(parcelId);
-          console.log('[DEBUG] Property data for parcelId (manual search):', parcelId, propertyResult);
+      // Try TaxAssessor lookup for parcelId (now that we have coordinates)
+      const taxParcelId = await fetchParcelId(latitude, longitude);
+      let parcelId;
+      if (taxParcelId) {
+        console.log('[DEBUG] TaxAssessor parcelId (manual search):', taxParcelId);
+        parcelId = taxParcelId;
+      }
+
+      if (!parcelId) {
+        const result = await getParcelByLocation({ variables: { latitude, longitude } });
+        console.log('[DEBUG] GraphQL getParcelByLocation result (manual search):', result);
+        parcelId =
+          (result.data as any)?.executeGetParcelByLocation?.parcel_id ??
+          (result.data as any)?.executeGetParcelByLocation?.ID;
+        console.log('[DEBUG] GraphQL parcelId (manual search):', parcelId);
+      }
+
+      if (parcelId) {
+        // Fetch property data by parcelId and log it
+        const propertyResult = await getPropertyByParcelId(parcelId);
+        console.log('[DEBUG] Property data for parcelId (manual search):', parcelId, propertyResult);
         }
 
       if (parcelId && onAddressSelect) {

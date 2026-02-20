@@ -7,10 +7,10 @@ export const GET_PARCEL = gql`
   query getParcel($latitude: Float!, $longitude: Float!) {
     executeGetParcelByLocation(longitude: $longitude, latitude: $latitude) {
       ID
-    }
       latitude
       longitude
     }
+  }
 `;
 
  //get property by parcel ID (for address search results)
