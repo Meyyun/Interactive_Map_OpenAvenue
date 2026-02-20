@@ -173,7 +173,7 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
       // Fetch property data if we have a valid parcelId
       if (parcelId) {
         try {
-          const propertyResult = await getPropertyByParcelId(parcelId);
+          const propertyResult = await getPropertyByParcelId({ variables: { parcelId } });
           console.log('[DEBUG] Property data for parcelId:', parcelId, propertyResult);
         } catch (err) {
           console.warn('[DEBUG] Property data fetch failed for parcelId:', parcelId, err);
@@ -250,7 +250,7 @@ export default function SearchBar({ onAddressSelect }: SearchBarProps) {
 
       if (parcelId) {
         // Fetch property data by parcelId and log it
-        const propertyResult = await getPropertyByParcelId(parcelId);
+        const propertyResult = await getPropertyByParcelId({ variables: { parcelId } });
         console.log('[DEBUG] Property data for parcelId (manual search):', parcelId, propertyResult);
         }
 
