@@ -53,14 +53,21 @@ Street View API (optional): Can be integrated to show panoramic street-level ima
 The application is deployed on Vercel, providing:
 
 Fast global CDN delivery
+
 Continuous deployment
+
 Optimized performance for frontend applications
 
 # Key Features
 
 📍 Address autocomplete search
+
 🗺️ Dynamic parcel boundary visualization
+
 🏠 Property data retrieval by parcel ID
+
 ⚡ Efficient GraphQL queries with caching
+
 ☁️ Cloud-hosted scalable backend
+
 🌎 Smooth and responsive map experience
