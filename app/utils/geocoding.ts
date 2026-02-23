@@ -1,6 +1,14 @@
 // Alternative geocoding without Google Maps API
 // Uses OpenStreetMap Nominatim service (free, no API key required)
 
+// Declare Google Maps types for window object
+declare global {
+  interface Window {
+    google?: any;
+    initGoogleMaps?: () => void;
+  }
+}
+
 export interface Coordinates {
   latitude: number;
   longitude: number;
