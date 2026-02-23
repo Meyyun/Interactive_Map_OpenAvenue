@@ -5,7 +5,8 @@
 This project is designed to empower real estate brokers with data-driven insights and search capabilities, enabling them to efficiently identify new leads and prospects.
 
 Live Demo:
-    <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/9cb5826ab6dc48d0b5ebbcf6ce8b9628-b37e13a2c4f590b2-full-play.gif">
+    https://interactive-map-open-avenue.vercel.app/
+
 # echnologies and Tools
 🗺️ Mapbox GL
 
@@ -47,3 +48,19 @@ Place Details API: Fetches precise coordinates (lat/lng) for selected addresses.
 Geocoding API: Converts geographic coordinates into readable addresses.
 
 Street View API (optional): Can be integrated to show panoramic street-level images.
+
+# Deployment
+The application is deployed on Vercel, providing:
+
+Fast global CDN delivery
+Continuous deployment
+Optimized performance for frontend applications
+
+# Key Features
+
+📍 Address autocomplete search
+🗺️ Dynamic parcel boundary visualization
+🏠 Property data retrieval by parcel ID
+⚡ Efficient GraphQL queries with caching
+☁️ Cloud-hosted scalable backend
+🌎 Smooth and responsive map experience
